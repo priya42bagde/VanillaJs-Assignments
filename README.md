@@ -1,2 +1,2 @@
-# VanillaJs-ModelAndMenuSideBar
-VanillaJs-ModelAndMenuSideBar
+# VanillaJs
+VanillaJs-
