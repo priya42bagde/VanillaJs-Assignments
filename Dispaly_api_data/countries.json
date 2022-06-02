@@ -1,0 +1,46 @@
+[
+    {
+        "Country": "Portugal",
+        "Slug": "portugal",
+        "ISO2": "PT"
+    },
+    {
+        "Country": "Somalia",
+        "Slug": "somalia",
+        "ISO2": "SO"
+    },
+    {
+        "Country": "Antarctica",
+        "Slug": "antarctica",
+        "ISO2": "AQ"
+    },
+    {
+        "Country": "China",
+        "Slug": "china",
+        "ISO2": "CN"
+    },
+    {
+        "Country": "Jamaica",
+        "Slug": "jamaica",
+        "ISO2": "JM"
+    },
+    {
+        "Country": "Zambia",
+        "Slug": "zambia",
+        "ISO2": "ZM"
+    },
+    {
+        "Country": "Paraguay",
+        "Slug": "paraguay",
+        "ISO2": "PY"
+    },
+    {
+        "Country": "Saint Kitts and Nevis",
+        "Slug": "saint-kitts-and-nevis",
+        "ISO2": "KN"
+    },
+    {
+        "Country": "Samoa",
+        "Slug": "samoa",
+        "ISO2": "WS"
+    }]
