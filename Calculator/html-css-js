@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="index.js" type="module" defer></script>
+    <script src="../../helpers/header.js" type="module" defer></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container text-center">
+      <div class="calendar">
+        <div class="controls">
+          <button class="prev">&lt;</button>
+          <select class="month"></select>
+          <select class="year"></select>
+          <button class="next">&gt;</button>
+        </div>
+        <div class="week-days"></div>
+        <div class="days"></div>
+        <button class="btn btn-primary btn-today">Today</button>
+      </div>
+    </div>
+
+    <template class="calendar-template"> </template>
+  </body>
+</html>
+---------
+const prevBtn = document.querySelector('.prev');
+const monthEl = document.querySelector('.month');
+const yearEl = document.querySelector('.year');
+const nextBtn = document.querySelector('.next');
+const weekDaysEl = document.querySelector('.week-days');
+const daysEl = document.querySelector('.days');
+const todayBtn = document.querySelector('.btn-today');
+const weekStartEl = document.querySelector('#week-start');
+
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+const WEEK_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const todayDate = new Date();
+
+const getMonths = () => {
+  const fragment = document.createDocumentFragment();
+  MONTHS.map(month => {
+    const option = document.createElement('option');
+    option.textContent = month;
+    fragment.appendChild(option);
+  });
+  return fragment;
+};
+
+const getYears = (date = todayDate) => {
+  const fragment = document.createDocumentFragment();
+  const currentYear = date.getFullYear();
+
+  for (let year = currentYear - 100; year < currentYear + 10; year++) {
+    const option = document.createElement('option');
+    option.textContent = year;
+    fragment.appendChild(option);
+  }
+
+  return fragment;
+};
+
+const getWeekDays = type => {
+  const fragment = document.createDocumentFragment();
+  WEEK_DAYS.map(weekDay => {
+    const span = document.createElement(type);
+    span.textContent = weekDay;
+    fragment.appendChild(span);
+  });
+  return fragment;
+};
+
+const getDays = (month, year) => {
+  const fragment = document.createDocumentFragment();
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  for (let day = 0; day < firstDay; day++) {
+    const span = document.createElement('span');
+    span.textContent = '';
+    fragment.appendChild(span);
+  }
+
+  for (let date = 1; date <= lastDate; date++) {
+    const span = document.createElement('span');
+    span.textContent = date;
+    span.classList.add('date-' + date);
+    fragment.appendChild(span);
+  }
+
+  return fragment;
+};
+
+const populateControls = (date = todayDate) => {
+  const monthOptions = getMonths();
+  monthEl.appendChild(monthOptions);
+  monthEl.selectedIndex = date.getMonth();
+
+  const yearOptions = getYears(date);
+  yearEl.appendChild(yearOptions);
+  yearEl.selectedIndex = 100;
+};
+
+const populateWeekDays = () => {
+  const weekDays = getWeekDays('span');
+  weekDaysEl.innerHTML = '';
+  weekDaysEl.appendChild(weekDays);
+};
+
+const populateDays = (date = todayDate) => {
+  const days = getDays(monthEl.selectedIndex, +yearEl.value);
+  daysEl.innerHTML = '';
+  daysEl.appendChild(days);
+
+  const isCurrentMonth = date.getMonth() === monthEl.selectedIndex && date.getFullYear() === +yearEl.value;
+  if (isCurrentMonth) {
+    daysEl.classList.add('current-month');
+  } else {
+    daysEl.classList.remove('current-month');
+  }
+
+  daysEl.querySelector(`.date-${date.getDate()}`).classList.add('today');
+};
+
+const setDate = (date = todayDate) => {
+  monthEl.selectedIndex = date.getMonth();
+  yearEl.value = date.getFullYear();
+};
+
+const setPreviousMonth = () => {
+  const previousDate = new Date(+yearEl.value, monthEl.selectedIndex, 0);
+  if (previousDate.getFullYear() < todayDate.getFullYear() - 100) {
+    return;
+  }
+
+  setDate(previousDate);
+  return true;
+};
+
+const setNextMonth = () => {
+  const nextDate = new Date(+yearEl.value, monthEl.selectedIndex + 1, 1);
+  if (nextDate.getFullYear() >= todayDate.getFullYear() + 10) {
+    return false;
+  }
+
+  setDate(nextDate);
+  return true;
+};
+
+prevBtn.addEventListener('click', () => {
+  if (setPreviousMonth()) {
+    populateDays();
+  }
+});
+nextBtn.addEventListener('click', () => {
+  if (setNextMonth()) {
+    populateDays();
+  }
+});
+monthEl.addEventListener('change', () => populateDays());
+yearEl.addEventListener('change', () => populateDays());
+todayBtn.addEventListener('click', () => {
+  setDate();
+  populateDays();
+});
+
+populateWeekDays();
+populateControls();
+populateDays();
+-------
+@import url(../../helpers/core.css);
+
+.calendar {
+  padding: 0.5rem;
+  border: 1px solid grey;
+  display: inline-block;
+  user-select: none;
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.controls select {
+  padding: 0.25em;
+  flex: 1 1 0;
+}
+
+.week-days {
+  display: flex;
+  justify-content: space-around;
+  color: grey;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 2rem);
+  gap: 0.5rem;
+}
+
+.days span:nth-child(7n + 1) {
+  color: red;
+}
+
+.days span {
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.today {
+  border-radius: 50%;
+  border: 1px solid black;
+}
+
+.days.current-month .today {
+  background-color: rgba(0, 0, 255, 0.756);
+  color: white;
+  border-radius: 50%;
+  border: none;
+}
+
+.days.current-month span.today:nth-child(7n + 1) {
+  background-color: red;
+}
+
+.btn-today{
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.current-month + .btn-today {
+  cursor: not-allowed;
+  color: grey;
+  background-color: lightgrey;
+}
