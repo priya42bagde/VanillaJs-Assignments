@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="index.js" type="module" defer></script>
+    <script src="../../helpers/header.js" type="module" defer></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container text-center">
+      <div class="counter">
+        <div class="counter-value">
+          <span class="value">0</span>
+        </div>
+        <div class="counter-controls">
+          <button class="btn btn-primary" id="decrement">-</button>
+          <button class="btn btn-primary" id="increment">+</button>
+        </div>
+
+        <div class="change">
+          <label for="changeBy">Increment/Decrement by:</label>
+          <input type="number" id="changeBy" value="1" min="1" max="10" />
+        </div>
+
+        <div class="counter-controls">
+          <button class="btn btn-primary" id="reset">Reset</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+---------------------------------
+const increment = document.getElementById('increment');
+const decrement = document.getElementById('decrement');
+const changeBy = document.getElementById('changeBy');
+const reset = document.getElementById('reset');
+const value = document.querySelector('.value');
+
+increment.addEventListener('click', () => {
+  value.textContent = +value.textContent + changeBy.valueAsNumber;
+});
+
+decrement.addEventListener('click', () => {
+  value.textContent = parseInt(value.textContent) - parseInt(changeBy.value);
+});
+
+changeBy.addEventListener('change', () => {
+  const changeByValue = changeBy.valueAsNumber;
+
+  if (Number.isNaN(changeByValue)) {
+    changeBy.value = 1;
+  } else if (changeByValue < 0) {
+    changeBy.value = 1;
+  } else if (changeByValue > 10) {
+    changeBy.value = 10;
+  }
+});
+
+reset.addEventListener('click', () => {
+  value.textContent = 0;
+});
+-----------------------------------
+@import url(../../helpers/core.css);
+
+.btn {
+  color: black;
+  font-size: 1rem;
+}
+
+.counter-value {
+  padding: 1rem;
+  font-weight: bold;
+  font-size: 3rem;
+}
+
+input {
+  width: 3rem;
+  height: 2rem;
+  font-size: 1rem;
+}
+
+.change {
+  margin: 1rem 0;
+}
