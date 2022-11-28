@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="index.js" type="module" defer></script>
+    <script src="../../helpers/header.js" type="module" defer></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container text-center">
+      <div class="display" id="display">
+        <span>:</span>
+        <input type="text" id="minMSB" value="0" />
+        <input type="text" id="minLSB" value="1" />
+        <input type="text" id="secMSB" value="0" />
+        <input type="text" id="secLSB" value="5" />
+      </div>
+      <div id="controls">
+        <button class="btn btn-primary" id="start">Start</button>
+        <button class="btn btn-primary" id="stop" disabled>Stop</button>
+        <button class="btn btn-primary" id="reset">Reset</button>
+      </div>
+
+      <p>Please enter a valid time in <strong>MM:SS</strong></p>
+    </div>
+  </body>
+</html>
+--------------------------------
+const display = document.getElementById('display');
+const controls = document.getElementById('controls');
+
+class Timer {
+  msbRegex = /^[0-5]$/;
+  lsbRegex = /^[0-9]$/;
+
+  minutes = 0;
+  seconds = 0;
+
+  constructor(minMSB, minLSB, secMSB, secLSB, start, stop, reset, display) {
+    this.minMSB = document.getElementById(minMSB);
+    this.minLSB = document.getElementById(minLSB);
+    this.secMSB = document.getElementById(secMSB);
+    this.secLSB = document.getElementById(secLSB);
+
+    this.start = document.getElementById(start);
+    this.stop = document.getElementById(stop);
+    this.reset = document.getElementById(reset);
+
+    this.display = document.getElementById(display);
+  }
+
+  onClick = event => {
+    if (event.target.tagName === 'INPUT') event.target.select();
+    else if (event.target.id === 'start') this.onStart(event);
+    else if (event.target.id === 'stop') this.onStop(event);
+    else if (event.target.id === 'reset') this.onReset(event);
+  };
+
+  onStart() {
+    this.setControls(true, false);
+
+    this.display.classList.add('progress');
+    this.setInputsDisabledStatus(true);
+    this.setTime();
+    this.startTimer();
+  }
+
+  onStop() {
+    this.setControls(false, true);
+    this.display.classList.remove('progress');
+    this.setInputsDisabledStatus(false);
+    clearInterval(this.intervalId);
+  }
+
+  onReset() {
+    this.setControls(false, true);
+    this.resetControls();
+    this.resetTimerValue();
+  }
+
+  setControls(startStatus = false, stopStatus = false) {
+    this.start.disabled = startStatus;
+    this.stop.disabled = stopStatus;
+  }
+
+  onInput = event => {
+    const value = Number(event.data);
+
+    if (typeof value === 'number') {
+      if (event.target.id === 'minMSB' || event.target.id === 'secMSB') {
+        this.onValueEntry(this.msbRegex, event.target, value);
+      } else if (event.target.id === 'minLSB' || event.target.id === 'secLSB') {
+        this.onValueEntry(this.lsbRegex, event.target, value);
+      }
+    }
+  };
+
+  onValueEntry(regex, target, value) {
+    if (regex.test(value)) {
+      target.value = value;
+      target.nextElementSibling?.focus();
+      target.nextElementSibling?.select();
+    } else {
+      target.value = 0;
+      target.select();
+    }
+  }
+
+  setInputsDisabledStatus(isDisabled = false) {
+    this.minMSB.disabled = isDisabled;
+    this.minLSB.disabled = isDisabled;
+    this.secMSB.disabled = isDisabled;
+    this.secLSB.disabled = isDisabled;
+  }
+
+  resetControls() {
+    clearInterval(this.intervalId);
+    this.display.classList.remove('progress');
+    this.setInputsDisabledStatus(false);
+  }
+
+  resetTimerValue() {
+    this.minMSB.value = 0;
+    this.minLSB.value = 0;
+    this.secMSB.value = 0;
+    this.secLSB.value = 0;
+  }
+
+  setTime() {
+    this.minutes = +(this.minMSB.value + this.minLSB.value);
+    this.seconds = +(this.secMSB.value + this.secLSB.value);
+  }
+
+  startTimer() {
+    if (this.minutes === 0 && this.seconds === 0) {
+      this.onReset();
+      return;
+    }
+
+    this.intervalId = setInterval(() => {
+      this.seconds -= 1;
+
+      if (this.seconds < 0) {
+        this.seconds = 59;
+        this.minutes -= 1;
+      }
+
+      if (this.minutes === 0 && this.seconds === 0) {
+        this.onReset();
+      }
+
+      this.setDisplay(this.minutes, this.seconds);
+    }, 1000);
+  }
+
+  setDisplay(mins, secs) {
+    [this.minMSB.value, this.minLSB.value] = String(mins).padStart(2, 0).split('');
+    [this.secMSB.value, this.secLSB.value] = String(secs).padStart(2, 0).split('');
+  }
+}
+
+const timer = new Timer('minMSB', 'minLSB', 'secMSB', 'secLSB', 'start', 'stop', 'reset', 'display');
+display.addEventListener('input', timer.onInput);
+document.body.addEventListener('click', timer.onClick);
+-----------------------------
+@import url(../../helpers/core.css);
+
+.display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-size: 3rem;
+  column-gap: 0.5rem;
+}
+
+.display span {
+  order: 1;
+}
+
+.display #secMSB,
+.display #secLSB {
+  order: 2;
+}
+
+input {
+  width: 2rem;
+  margin: 0;
+  font-size: 3rem;
+  border: 1px solid grey;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+.display.progress input {
+  border-color: transparent;
+}
+
+button {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid grey;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.15);
+}
