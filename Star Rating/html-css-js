@@ -1,0 +1,126 @@
+index.html:
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="index.js" type="module" defer></script>
+    <script src="../../helpers/header.js" type="module" defer></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container text-center">
+      <div id="starContainer" class="star-container"></div>
+      <div class="info">Click to set the rating</div>
+      <div id="smileyContainer" class="smiley-container"></div>
+    </div>
+  </body>
+</html>
+--------------------
+helper.js:
+export function createElement(type, properties) {
+  const element = document.createElement(type);
+
+  for (let key in properties) {
+    element.setAttribute(key, properties[key]);
+  }
+
+  return element;
+}
+
+export function createElements(count, fn, start = 0) {
+  const fragment = document.createDocumentFragment();
+  for (let i = start; i < count + start; i++) {
+    fragment.appendChild(fn(i));
+  }
+  return fragment;
+  -----------------------
+  index.js:
+  import { createElement, createElements } from './helper.js';
+
+const starCount = 5; // Use multiples of 5
+const smileys = ['😢', '😞', '😐', '😀', '😎'];
+
+let rating = 0;
+let filled = 0; // to reduce the iterations
+let unfilled = 0; // to reduce the iterations
+
+const starContainer = document.getElementById('starContainer');
+const smileyContainer = document.getElementById('smileyContainer');
+starContainer.appendChild(
+  createElements(starCount, i => createElement('div', { class: 'star star-empty', 'data-index': i }), 1)
+);
+const stars = starContainer.querySelectorAll('.star');
+
+starContainer.addEventListener('mouseover', hoverListener);
+starContainer.addEventListener('mouseleave', leaveListener);
+starContainer.addEventListener('click', clickListener);
+
+function fillStars(count) {
+  for (let i = filled; i < count; i++) {
+    stars[i].classList.add('star-filled');
+    stars[i].classList.remove('star-empty');
+  }
+
+  for (let i = count; i < unfilled; i++) {
+    stars[i].classList.remove('star-filled');
+    stars[i].classList.add('star-empty');
+  }
+
+  filled = count;
+  unfilled = count;
+}
+
+function clickListener(event) {
+  const target = event.target;
+  if (target.classList.contains('star')) {
+    rating = +target.dataset.index;
+    setSmiley(rating);
+  }
+}
+
+function hoverListener(event) {
+  const target = event.target;
+  if (target.classList.contains('star')) {
+    const index = target.dataset.index;
+    fillStars(+index);
+  }
+}
+
+function leaveListener() {
+  fillStars(+rating);
+}
+
+function setSmiley(rating) {
+  const index = Math.ceil((smileys.length * rating) / starCount) - 1;
+  smileyContainer.textContent = smileys[index];
+}
+------------
+style.css
+@import url(../../helpers/core.css);
+
+.star-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 3rem;
+}
+
+.star-empty::before {
+  content: '☆';
+}
+
+.star-filled::before {
+  color: rgba(231, 198, 10, 0.685);
+  cursor: pointer;
+  content: '★';
+}
+
+.info {
+  margin: 2rem;
+}
+
+.smiley-container {
+  font-size: 6rem;
+}
