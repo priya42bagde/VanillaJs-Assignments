@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="index.js" type="module" defer></script>
+    <script src="../../helpers/header.js" type="module" defer></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container text-center">
+      <form class="flex">
+        <select name="position" id="horizontal-position">
+          <option value="left">Left</option>
+          <option value="right">Right</option>
+        </select>
+
+        <select name="position" id="vertical-position">
+          <option value="top">Top</option>
+          <option value="bottom">Bottom</option>
+        </select>
+
+        <select name="type" id="type">
+          <option value="success">Success</option>
+          <option value="error">Error</option>
+          <option value="warning">Warning</option>
+          <option value="info">Info</option>
+        </select>
+
+        <input type="text" name="message" id="message" placeholder="Message" value="This is a toast message!" />
+
+        <label for="duration" class="flex"
+          >Duration <input type="range" name="duration" id="duration" min="3" max="10" value="5"
+        /></label>
+
+        <button type="button" class="btn btn-primary" id="show-toast">Show Toast</button>
+      </form>
+    </div>
+
+    <div class="toast-container tc-left-top flex"></div>
+    <div class="toast-container tc-left-bottom flex"></div>
+    <div class="toast-container tc-right-top flex"></div>
+    <div class="toast-container tc-right-bottom flex"></div>
+
+    <template id="toast-template">
+      <div class="toast flex">
+        <span class="toast-message"></span>
+        <button class="remove flex-center">&#x2715;</button>
+      </div>
+    </template>
+  </body>
+</html>
+---------------------
+const horizontalPositionEl = document.getElementById('horizontal-position');
+const verticalPositionEl = document.getElementById('vertical-position');
+const toastTypeEl = document.getElementById('type');
+const toastMessageEl = document.getElementById('message');
+const showToastButtonEl = document.getElementById('show-toast');
+const durationEl = document.getElementById('duration');
+
+const leftTopContainer = document.querySelector('.tc-left-top');
+const leftBottomContainer = document.querySelector('.tc-left-bottom');
+const rightTopContainer = document.querySelector('.tc-right-top');
+const rightBottomContainer = document.querySelector('.tc-right-bottom');
+const toastTemplate = document.getElementById('toast-template');
+
+toastMessageEl.addEventListener('input', handleShowToastButton);
+showToastButtonEl.addEventListener('click', displayToast);
+
+function handleShowToastButton() {
+  showToastButtonEl.disabled = toastMessageEl.value.length === 0;
+}
+
+function displayToast() {
+  const message = toastMessageEl.value;
+  const type = toastTypeEl.value;
+  const horizontalPosition = horizontalPositionEl.value;
+  const verticalPosition = verticalPositionEl.value;
+  const duration = +durationEl.value * 1000;
+  showToast(message, type, duration, horizontalPosition, verticalPosition);
+}
+
+function showToast(message, type, duration, horizontalPosition, verticalPosition) {
+  if (horizontalPosition === 'left') {
+    if (verticalPosition === 'top') {
+      leftTopContainer.prepend(createToast(message, type, duration, horizontalPosition));
+    } else {
+      leftBottomContainer.append(createToast(message, type, duration, horizontalPosition));
+    }
+  } else {
+    if (verticalPosition === 'top') {
+      rightTopContainer.prepend(createToast(message, type, duration, horizontalPosition));
+    } else {
+      rightBottomContainer.append(createToast(message, type, duration, horizontalPosition));
+    }
+  }
+}
+
+function createToast(message, type, duration, horizontalPosition) {
+  const toast = toastTemplate.content.cloneNode(true);
+  toast.querySelector('.toast-message').textContent = message;
+  toast.querySelector('.toast').classList.add(type);
+  toast.querySelector('.remove').addEventListener('click', removeToast);
+  const toastEl = toast.querySelector('.toast');
+
+  setTimeout(removeToast, duration);
+
+  async function removeToast() {
+    toastEl.classList.add(horizontalPosition === 'left' ? 'fade-out-left' : 'fade-out-right');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    toastEl.remove();
+  }
+
+  return toast;
+}
+---------------------------------------
+@import url(../../helpers/core.css);
+
+form {
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+input,
+select {
+  padding: 0.5em;
+  font-size: 1rem;
+}
+
+#message {
+  min-width: 25ch;
+}
+
+[for='duration'] {
+  align-items: center;
+}
+
+.toast-container {
+  position: fixed;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tc-left-top {
+  top: 1rem;
+  left: 1rem;
+}
+
+.tc-left-bottom {
+  bottom: 1rem;
+  left: 1rem;
+}
+
+.tc-right-top {
+  top: 1rem;
+  right: 1rem;
+}
+
+.tc-right-bottom {
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.toast {
+  padding: 0.5em;
+  background-color: pink;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.25);
+}
+
+.toast.success {
+  background-color: #00b300;
+}
+
+.toast.error {
+  background-color: #ff0000;
+}
+
+.toast.warning {
+  background-color: #ffa500;
+}
+
+.toast.info {
+  background-color: lightyellow;
+}
+
+.toast::before {
+  min-width: 1rem;
+  padding: 0.1em 0.5em;
+  font-weight: bold;
+  font-size: 0.85em;
+}
+
+.toast.success::before {
+  content: '✓';
+}
+
+.toast.error::before {
+  content: '✗';
+}
+
+.toast.warning::before {
+  content: '⚠';
+}
+
+.toast.info::before {
+  content: 'ⓘ';
+}
+
+.remove {
+  all: unset;
+  margin-left: 1em;
+  cursor: pointer;
+}
+
+.tc-left-top .toast,
+.tc-left-bottom .toast {
+  animation: appearFromLeft 0.1s ease-in forwards;
+}
+
+.tc-left-top .toast.fade-out-left,
+.tc-left-bottom .toast.fade-out-left {
+  animation: fadeOutToLeft 0.1s ease-in forwards;
+}
+
+@keyframes appearFromLeft {
+  0% {
+    transform: translate(-200%, 0);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes fadeOutToLeft {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(-200%, 0);
+  }
+}
+
+.tc-right-top .toast,
+.tc-right-bottom .toast {
+  animation: appearFromRight 0.1s ease-in forwards;
+}
+
+.tc-right-top .toast.fade-out-right,
+.tc-right-bottom .toast.fade-out-right {
+  animation: fadeOutToRight 0.1s ease-in forwards;
+}
+
+@keyframes appearFromRight {
+  0% {
+    transform: translate(200%, 0);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes fadeOutToRight {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(200%, 0);
+  }
+}
