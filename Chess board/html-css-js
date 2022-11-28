@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="index.js" type="module" defer></script>
+    <script src="../../helpers/header.js" type="module" defer></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container text-center">
+      <div class="board"></div>
+
+      <p>Click on any cell to color diagonally</p>
+    </div>
+  </body>
+</html>
+------------------------------------
+'use strict';
+
+var board = document.querySelector('.board');
+var clickedOnCell = false;
+createBoard(board, 8);
+
+function createBoard(element, rows, cols = rows) {
+  var gridDocFragment = document.createDocumentFragment();
+  for (let i = 0; i < rows; i++) {
+    var row = document.createElement('div');
+    for (let j = 0; j < cols; j++) {
+      var col = document.createElement('div');
+      col.dataset.locX = i;
+      col.dataset.locY = j;
+      col.classList.add('box');
+      row.appendChild(col);
+    }
+    gridDocFragment.appendChild(row);
+  }
+  element.appendChild(gridDocFragment);
+}
+
+document.addEventListener('click', onClick);
+
+function onClick(event) {
+  var element = event.target;
+
+  if (clickedOnCell) resetChessGrid();
+
+  if (element.classList.contains('box')) {
+    clickedOnCell = true;
+    setColor(element);
+    let y1 = +element.dataset.locY;
+    let y2 = +element.dataset.locY;
+
+    let ePrev = element.parentElement.previousElementSibling,
+      eNext = element.parentElement.nextElementSibling;
+
+    do {
+      if (ePrev) {
+        setColor(ePrev.querySelector("[data-loc-y='" + (y1 - 1) + "']"));
+        setColor(ePrev.querySelector("[data-loc-y='" + (y2 + 1) + "']"));
+      }
+      if (eNext) {
+        setColor(eNext.querySelector("[data-loc-y='" + (y1 - 1) + "']"));
+        setColor(eNext.querySelector("[data-loc-y='" + (y2 + 1) + "']"));
+      }
+      y1--;
+      y2++;
+      ePrev = ePrev ? ePrev.previousElementSibling : ePrev;
+      eNext = eNext ? eNext.nextElementSibling : eNext;
+    } while (ePrev || eNext);
+  } else resetChessGrid();
+}
+
+function setColor(element) {
+  if (element) element.classList.add('selected');
+}
+
+function resetChessGrid() {
+  clickedOnCell = false;
+  const elements = document.querySelector('.board').getElementsByClassName('selected');
+  while (elements.length !== 0) elements[0].classList.remove('selected');
+}
+----------------------
+@import url(../../helpers/core.css);
+
+* {
+  box-sizing: border-box;
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 320px;
+  height: 320px;
+  margin: auto;
+  border: 2px solid black;
+}
+
+.board div {
+  display: flex;
+  flex-grow: 1;
+}
+
+.board div:nth-child(even) div:nth-child(odd) {
+  background-color: black;
+}
+
+.board div:nth-child(odd) div:nth-child(even) {
+  background-color: black;
+}
+
+.board div div.box.selected {
+  background-color: red;
+}
